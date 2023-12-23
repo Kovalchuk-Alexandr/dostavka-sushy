@@ -123,8 +123,11 @@ h3, h4 {
 	display: flex;
 	align-items: flex-start;
 	padding-bottom: 15px;
+	padding-right: 5px;
+	padding-left: 5px;
 	border-bottom: 1px solid #dee2e6;
 	margin-bottom: 15px;
+	justify-content: space-between;
 }
 
 .cart-item__img  {
@@ -154,6 +157,18 @@ h3, h4 {
     font-size: 80%;
     line-height: 1;
     margin-bottom: 15px;
+}
+
+.cart-item__close {
+	/* align-self: flex-start; */
+	margin-right: 0px;
+	padding: 0 10px;
+	font-weight: bold;
+	font-size: 18px;
+}
+
+.cart-item__close:hover {
+	cursor: pointer;
 }
 
 .cart-item__details {
