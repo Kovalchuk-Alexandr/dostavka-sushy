@@ -160,9 +160,12 @@ const itemUpdateCounter = function (id, type, place) {
     // let count = state.items[itemIndex].counter;
     let count = target[itemIndex].counter;
     
-    if (type == "minus" && count > 1) {
-        count--;
-        target[itemIndex].counter = count;
+    if (type == "minus" ) {
+        if (count > 1) {
+            count--;
+            target[itemIndex].counter = count;
+        } else if (count == 1 && target === state.cart)
+            deleteItem(id);
   
     } else if (type == "plus") {
         count++;
@@ -236,22 +239,6 @@ const itemUpdateViewCounter = function (id, place) {
 const deleteItem = function (id) {
 
     let target = state.cart;
-    // let container;
-    
-    // switch (place) {
-    //     case "items":
-    //         target = state.items;
-    //         container = productsContainer;
-    //         break;
-    //     case "cart":
-    //         target = state.cart;
-    //         container = cartItemsContainer;
-    //         break;
-
-    //     default:
-    //         break;
-    // }
-
 
     // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
     const itemIndex = target.findIndex(function (element) {
@@ -289,7 +276,6 @@ const checkCart = function () {
         makeOrder.style.display = "none";
         cartEmptyNotification.style.display = "block";
     }
-
 }
 
 // Ф-я добавления товаров в корзину
@@ -386,8 +372,7 @@ const calculateTotalPrice = function () {
 
 // Ловим событие в родительском контейнере
 productsContainer.addEventListener('click', function (e) {
- 
-    
+     
     if (e.target.matches('[data-click="minus"]')) {
         // console.log('-');
         const id = e.target.closest("[data-productid]").dataset.productid;
