@@ -1,62 +1,94 @@
-const items = [
-    {
-        id: 1,
-        title: "Филадельфия хит ролл",
-        price: 300,
-        weigth: 180,
-        itemsInBox: 6,
-        img: "philadelphia.jpg",
-        counter: 1,
-    },
-    {
-        id: 2,
-        title: "Калифорния темпура",
-        price: 250,
-        weigth: 250,
-        itemsInBox: 6,
-        img: "california-tempura.jpg",
-        counter: 1,
-    },
-    {
-        id: 3,
-        title: "Запеченый ролл 'Калифорния'",
-        price: 230,
-        weigth: 182,
-        itemsInBox: 6,
-        img: "zapech-california.jpg",
-        counter: 1,
-    },
-    {
-        id: 4,
-        title: "Филадельфия",
-        price: 230,
-        weigth: 320,
-        itemsInBox: 6,
-        img: "philadelphia.jpg",
-        counter: 1,
-    },
-];
+// Данные для локального использования:
+// const items = [
+//     {
+//         id: 1,
+//         title: "Филадельфия хит ролл",
+//         price: 300,
+//         weigth: 180,
+//         itemsInBox: 6,
+//         img: "philadelphia.jpg",
+//         counter: 1,
+//     },
+//     {
+//         id: 2,
+//         title: "Калифорния темпура",
+//         price: 250,
+//         weigth: 250,
+//         itemsInBox: 6,
+//         img: "california-tempura.jpg",
+//         counter: 1,
+//     },
+//     {
+//         id: 3,
+//         title: "Запеченый ролл 'Калифорния'",
+//         price: 230,
+//         weigth: 182,
+//         itemsInBox: 6,
+//         img: "zapech-california.jpg",
+//         counter: 1,
+//     },
+//     {
+//         id: 4,
+//         title: "Филадельфия",
+//         price: 230,
+//         weigth: 320,
+//         itemsInBox: 6,
+//         img: "philadelphia.jpg",
+//         counter: 1,
+//     },
+// ];
 
-// Глобальная переменная для хранения состояния приложения
-const state = {
-    items: items,
-    cart: []
+// Вариант получения данных с сервера (в данном случае с локального)
+// const stringJson = JSON.stringify(items);
+// console.log(stringJson);
+
+const itemsUrl = "http://localhost:3000/js/json/db.json";
+
+function getItems(url) {
+    return fetch(url).then((answer) => answer.json());
 }
 
-const productsContainer = document.querySelector("#productsMainContainer");
-const cartItemsContainer = document.querySelector("#cartItemsHolder");
-const cartEmptyNotification = document.querySelector("#cartEmpty");
-const cartTotal = document.querySelector("#cartTotal");
-const makeOrder = document.querySelector("#makeOrder");
-const cart = document.querySelector("#cart");
-const cartTotalPrice = document.querySelector("#cartTotalPrice");
-const deliveryPriceContainer = document.querySelector("#deliveryPriceContainer");
+// 2-й вариант получения через async-await
+function getItemsFromCart() {
+    return JSON.parse(localStorage.getItem("cart"));
+}
 
-const deliveryMinimalFree = 600;
+main();
 
-const renderItem = function (item) {
-    
-    const markup = `
+async function main() {
+    const items = await getItems(itemsUrl);
+    // 2-й вариант получения через async-await
+    // const itemsFromCart = await getItemsFromCart();
+
+    // console.log(items);
+
+    // const localCartJson = localStorage.getItem('cart');
+    // const localCart = JSON.parse(localCartJson)
+    const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    console.log(localCart);
+
+    // Глобальная переменная для хранения состояния приложения
+    const state = {
+        items: items,
+        cart: localCart,
+    };
+
+    const productsContainer = document.querySelector("#productsMainContainer");
+    const cartItemsContainer = document.querySelector("#cartItemsHolder");
+    const cartEmptyNotification = document.querySelector("#cartEmpty");
+    const cartTotal = document.querySelector("#cartTotal");
+    const makeOrder = document.querySelector("#makeOrder");
+    const cart = document.querySelector("#cart");
+    const cartTotalPrice = document.querySelector("#cartTotalPrice");
+    const deliveryPriceContainer = document.querySelector(
+        "#deliveryPriceContainer"
+    );
+
+    const deliveryMinimalFree = 600;
+
+    const renderItem = function (item) {
+        const markup = `
         <div class="col-md-6">
             <div class="card mb-4" data-productid=${item.id}>
                 <img class="product-img" src="img/roll/${item.img}" alt="${item.title}">
@@ -83,12 +115,12 @@ const renderItem = function (item) {
             </div>
         </div>
     `;
-    
-    productsContainer.insertAdjacentHTML('beforeend', markup);
-}
 
-const renderItemInCart = function (item) {
-    const markup = `
+        productsContainer.insertAdjacentHTML("beforeend", markup);
+    };
+
+    const renderItemInCart = function (item) {
+        const markup = `
         <div class="cart-item" data-productid="${item.id}">
             <div class="cart-item__top">
                 <div class="cart-item__img">
@@ -122,298 +154,335 @@ const renderItemInCart = function (item) {
         </div>
     `;
 
-    cartItemsContainer.insertAdjacentHTML("beforeend", markup);
-};
+        cartItemsContainer.insertAdjacentHTML("beforeend", markup);
+    };
 
-// Выводим все элементы (карточки)
-state.items.forEach(renderItem);
+    // Выводим все элементы (карточки)
+    state.items.forEach(renderItem);
 
-
-// Ф-я обновления счетчика в модели
-const itemUpdateCounter = function (id, type, place) {
-    // console.log(id);
-    // console.log(type);
-
-    switch (place) {
-        case 'items':
-            target = state.items;
-            break;
-        case 'cart':
-            target = state.cart;
-            break;
-    
-        default:
-            break;
-    }
-
-    // Находим в 'state' (БД) индекс кликнутого элемента по переданному индексу
-    // const itemIndex = state.items.findIndex(function (element) {
-    const itemIndex = target.findIndex(function (element) {
-        if (element.id == id ) {
-            return true;
+    // Ф-я проверки пустой корзины
+    const checkCart = function () {
+        if (state.cart.length > 0) {
+            cartEmptyNotification.style.display = "none";
+            cartTotal.style.display = "block";
+            makeOrder.style.display = "block";
+        } else {
+            cartTotal.style.display = "none";
+            makeOrder.style.display = "none";
+            cartEmptyNotification.style.display = "block";
         }
-    }); // [ {i:1}, {i:2}, {i:3}, {i:4},]
+    };
 
-    console.log("itemIndex: " + itemIndex);
-
-    // Получаем значение счетчика
-    // let count = state.items[itemIndex].counter;
-    let count = target[itemIndex].counter;
-    
-    if (type == "minus" ) {
-        if (count > 1) {
-            count--;
-            target[itemIndex].counter = count;
-        } else if (count == 1 && target === state.cart)
-            deleteItem(id);
-  
-    } else if (type == "plus") {
-        count++;
-        target[itemIndex].counter = count;
-        // state.items[itemIndex].counter = count;
-    }
-    // console.log('In ');
-    // console.log(target);
-    // console.log(target[itemIndex].counter + ' items');
-    
-};
-
-// Ф-я обновления счетчика в разметке
-const itemUpdateViewCounter = function (id, place) {
-
-    let target;
-    let container;
-    
-    switch (place) {
-        case "items":
-            target = state.items;
-            container = productsContainer;
-            break;
-        case "cart":
-            target = state.cart;
-            container = cartItemsContainer;
-            break;
-
-        default:
-            break;
-    }
-
-    calculateTotalPrice();
-
-    // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
-    // чтобы получить значение его свойства 'counter'
-    const itemIndex = target.findIndex(function (element) {
-        if (element.id == id) {
-            return true;
+    // Ф-я проверяет сумму доставки, и если больше 300 - выводим 'бесплатно'
+    const calculateDelivery = function () {
+        if (state.totalPrice >= deliveryMinimalFree) {
+            deliveryPriceContainer.innerText = " безплатно";
+            deliveryPriceContainer.classList.add("free");
+        } else {
+            deliveryPriceContainer.innerText = " 200 ₽";
+            deliveryPriceContainer.classList.remove("free");
         }
-    });
+    };
 
-    // Получаем значение счетчика
-    const countToShow = target[itemIndex].counter;
-    let sumToShow = undefined;
+    // Ф-я подсчета общей стоимости
+    const calculateTotalPrice = function () {
+        let totalPrice = 0;
 
-    if (target[itemIndex].sum) {
-        sumToShow = target[itemIndex].sum;
-        // console.log("sumToShow = " + sumToShow);
-    }
+        state.cart.forEach(function (element) {
+            let thisPrice = element.counter * element.price;
+            // console.log('Id: ' + element.id + ", Total: " + thisPrice);
+            element.sum = thisPrice;
 
-    // console.log("countToShow = " + countToShow);
+            totalPrice += thisPrice;
+        });
 
-    // 2.1) Находим в разметке счетчик // [data-count]
-    // const currentProduct = productsContainer.querySelector(
-    const currentProduct = container.querySelector(
-        '[data-productid="' + id + '"]'
-    );
-    const counter = currentProduct.querySelector("[data-count]");
-    const sum = currentProduct.querySelector("[data-sum]");
+        // console.log(state.cart);
+        // console.log(totalPrice);
+        state.totalPrice = totalPrice;
 
-    // 2.2) Обновить значение счетчика в разметке
-    counter.innerText = countToShow;
-    if (sumToShow) {
-        sum.innerText = sumToShow;
-    }
-}
+        // Форматирование цены
+        // В России в качестве разделителя целой и дробной части используется запятая, а в качестве разделителя разрядов - пробел
+        // console.log(new Intl.NumberFormat("ru-RU").format(number));
+        // → 123 456,789
 
+        // console.log(
+        //     new Intl.NumberFormat("ru-RU", {
+        //         style: "currency",
+        //         currency: "RUB",
+        //     }).format(number)
+        // );
+        // → 123 456,79 руб.
 
-// Ф-я обновления счетчика в разметке
-const deleteItem = function (id) {
+        const formatedPrice = new Intl.NumberFormat("ru-RU").format(totalPrice);
 
-    let target = state.cart;
+        cartTotalPrice.innerText = formatedPrice;
+        // cartTotalPrice.innerText = totalPrice;
 
-    // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
-    const itemIndex = target.findIndex(function (element) {
-        if (element.id == id) {
-            return true;
-        }
-    });
+        calculateDelivery();
+    };
 
-    if (target[itemIndex]) {
-        console.log("itemIndex to delete: " + itemIndex);
-
-        target.splice(itemIndex, 1);
-
+    // Если корзина не пуста при загрузке - выводим
+    if (state.cart.length > 0) {
         // Проверяем пустая корзина или нет, для отображения доп.информации
         checkCart();
-        
+        calculateTotalPrice();
         // очищаем контейнер и
         cartItemsContainer.innerHTML = "";
         // Вывод товара из корзины
         state.cart.forEach(renderItemInCart);
-        
+    }
+
+    // Ф-я обновления счетчика в модели
+    const itemUpdateCounter = function (id, type, place) {
+        // console.log(id);
+        // console.log(type);
+
+        switch (place) {
+            case "items":
+                target = state.items;
+                break;
+            case "cart":
+                target = state.cart;
+                break;
+
+            default:
+                break;
+        }
+
+        // Находим в 'state' (БД) индекс кликнутого элемента по переданному индексу
+        // const itemIndex = state.items.findIndex(function (element) {
+        const itemIndex = target.findIndex(function (element) {
+            if (element.id == id) {
+                return true;
+            }
+        }); // [ {i:1}, {i:2}, {i:3}, {i:4},]
+
+        console.log("itemIndex: " + itemIndex);
+
+        // Получаем значение счетчика
+        // let count = state.items[itemIndex].counter;
+        let count = target[itemIndex].counter;
+
+        if (type == "minus") {
+            if (count - 1 > 0) {
+                count--;
+                target[itemIndex].counter = count;
+            } else if (count - 1 == 0 && target === state.cart) {
+                target[itemIndex].counter = count;
+                deleteItem(id);
+            }
+        } else if (type == "plus") {
+            count++;
+            target[itemIndex].counter = count;
+            // state.items[itemIndex].counter = count;
+        }
+        // console.log('In ');
+        // console.log(target);
+        // console.log(target[itemIndex].counter + ' items');
+    };
+
+    // Ф-я обновления счетчика в разметке
+    const itemUpdateViewCounter = function (id, place) {
+        let target;
+        let container;
+
+        switch (place) {
+            case "items":
+                target = state.items;
+                container = productsContainer;
+                break;
+            case "cart":
+                target = state.cart;
+                container = cartItemsContainer;
+                break;
+
+            default:
+                break;
+        }
+
         calculateTotalPrice();
+
+        // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
+        // чтобы получить значение его свойства 'counter'
+        const itemIndex = target.findIndex(function (element) {
+            if (element.id == id) {
+                return true;
+            }
+        });
+
+        console.log("itemIndex: " + itemIndex);
+
+        if (itemIndex == -1) return;
+
+        let countToShow = undefined;
+        let sumToShow = undefined;
+
+        if (itemIndex !== -1) {
+            countToShow = target[itemIndex].counter;
+            sumToShow = target[itemIndex].sum;
+        }
+
+        // console.log("countToShow = " + countToShow);
+
+        // 2.1) Находим в разметке счетчик // [data-count]
+        // const currentProduct = productsContainer.querySelector(
+        const currentProduct = container.querySelector(
+            '[data-productid="' + id + '"]'
+        );
+
+        let counter;
+        let sum;
+
+        if (currentProduct.querySelector("[data-count]")) {
+            counter = currentProduct.querySelector("[data-count]");
+            counter.innerText = countToShow;
+        }
+
+        if (currentProduct.querySelector("[data-sum]")) {
+            sum = currentProduct.querySelector("[data-sum]");
+            if (sumToShow) {
+                sum.innerText = sumToShow;
+            }
+        }
+
+        // 2.2) Обновить значение счетчика в разметке
+    };
+
+    // Ф-я обновления счетчика в разметке
+    const deleteItem = function (id) {
+        let target = state.cart;
+
+        // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
+        const itemIndex = target.findIndex(function (element) {
+            if (element.id == id) {
+                return true;
+            }
+        });
+
+        if (target[itemIndex]) {
+            console.log("itemIndex to delete: " + itemIndex);
+
+            target.splice(itemIndex, 1);
+
+            // Проверяем пустая корзина или нет, для отображения доп.информации
+            checkCart();
+
+            // очищаем контейнер и
+            cartItemsContainer.innerHTML = "";
+            // Вывод товара из корзины
+            state.cart.forEach(renderItemInCart);
+
+            calculateTotalPrice();
+        }
+    };
+
+    function setLocal() {
+        localStorage.setItem("cart", JSON.stringify(state.cart));
     }
 
-}
+    // Ф-я добавления товаров в корзину
+    const addToCart = function (id) {
+        // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
+        // чтобы получить значение его свойства 'counter'
+        const itemIndex = state.items.findIndex(function (element) {
+            if (element.id == id) {
+                return true;
+            }
+        });
 
-// Ф-я проверки пустой корзины
-const checkCart = function () {
-    if (state.cart.length > 0) {
-        cartEmptyNotification.style.display = "none";
-        cartTotal.style.display = "block";
-        makeOrder.style.display = "block";
-    } else {
-        cartTotal.style.display = "none";
-        makeOrder.style.display = "none";
-        cartEmptyNotification.style.display = "block";
-    }
-}
+        // Проверяем, есть ли такой товар уже в корзине
+        const itemIndexInCart = state.cart.findIndex(function (element) {
+            if (element.id == id) {
+                return true;
+            }
+        });
 
-// Ф-я добавления товаров в корзину
-const addToCart = function (id) {
-    // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
-    // чтобы получить значение его свойства 'counter'
-    const itemIndex = state.items.findIndex(function (element) {
-        if (element.id == id) {
-            return true;
-        }
-    });
-
-    // Проверяем, есть ли такой товар уже в корзине
-    const itemIndexInCart = state.cart.findIndex(function (element) {
-        if (element.id == id) {
-            return true;
-        }
-    });
-
-    // console.log("itemIndex: " + itemIndex);
-    // console.log("itemIndexInCart: " + itemIndexInCart);
-
-    if (itemIndexInCart != -1) {
-        console.log('Товар существует, нужно изменить счетчик');
-        console.log(state.cart[itemIndexInCart].counter);
-        console.log(state.items[itemIndex].counter);
-        state.cart[itemIndexInCart].counter += state.items[itemIndex].counter;
-    } else {
+        if (itemIndexInCart != -1) {
+            console.log("Товар существует, нужно изменить счетчик");
+            console.log(state.cart[itemIndexInCart].counter);
+            console.log(state.items[itemIndex].counter);
+            state.cart[itemIndexInCart].counter +=
+                state.items[itemIndex].counter;
+        } else {
             const newItem = {
-            id: state.items[itemIndex].id,
-            title: state.items[itemIndex].title,
-            price: state.items[itemIndex].price,
-            weigth: state.items[itemIndex].weigth,
-            itemsInBox: state.items[itemIndex].itemsInBox,
-            img: state.items[itemIndex].img,
-            counter: state.items[itemIndex].counter,
-        };
+                id: state.items[itemIndex].id,
+                title: state.items[itemIndex].title,
+                price: state.items[itemIndex].price,
+                weigth: state.items[itemIndex].weigth,
+                itemsInBox: state.items[itemIndex].itemsInBox,
+                img: state.items[itemIndex].img,
+                counter: state.items[itemIndex].counter,
+            };
 
-        // Добавляем в массив 'cart[]' выбранный товар
-        state.cart.push(newItem);
-    }
-        
+            // Добавляем в массив 'cart[]' выбранный товар
+            state.cart.push(newItem);
+        }
 
-    // Сбрасываем счетчик товаров в разметке
-    state.items[itemIndex].counter = 1;
-    itemUpdateViewCounter(id, 'items');
+        // Сохраняем на localstorage
+        localStorage.setItem("cart", JSON.stringify(state.cart));
 
-    
-    // Проверяем пустая корзина или нет, для отображения доп.информации
-    checkCart();
-    calculateTotalPrice();
-    
-    // очищаем контейнер и 
-    cartItemsContainer.innerHTML = "";
-    // Вывод товара из корзины
-    state.cart.forEach(renderItemInCart);
-
-    // console.log(state.cart);
-}
-
-
-// Ф-я проверяет сумму доставки, и если больше 300 - выводим 'бесплатно'
-const calculateDelivery = function () {
-    if (state.totalPrice >= deliveryMinimalFree) {
-        deliveryPriceContainer.innerText = ' безплатно';
-        deliveryPriceContainer.classList.add('free');
-    } else {
-        deliveryPriceContainer.innerText = " 200 ₽";
-        deliveryPriceContainer.classList.remove("free");
-    }
-}
-
-
-// Ф-я подсчета общей стоимости
-const calculateTotalPrice = function () {
-    let totalPrice = 0;
-
-    state.cart.forEach(function (element) {
-        let thisPrice = element.counter * element.price; 
-        // console.log('Id: ' + element.id + ", Total: " + thisPrice);
-        element.sum = thisPrice;
-        
-        totalPrice += thisPrice;
-    })
-    
-    // console.log(state.cart);
-    // console.log(totalPrice);
-    state.totalPrice = totalPrice;
-    cartTotalPrice.innerText = totalPrice;
-
-    calculateDelivery();
-}
-
-
-// Ловим событие в родительском контейнере
-productsContainer.addEventListener('click', function (e) {
-     
-    if (e.target.matches('[data-click="minus"]')) {
-        // console.log('-');
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        itemUpdateCounter(id, 'minus', 'items'); //Обновление счетчика в модели
-        itemUpdateViewCounter(id, "items"); //Обновление счетчика в проекте
-    } else if (e.target.matches('[data-click="plus"]')) {
-        // console.log('+');
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        itemUpdateCounter(id, "plus", "items");
+        // Сбрасываем счетчик товаров в разметке
+        state.items[itemIndex].counter = 1;
         itemUpdateViewCounter(id, "items");
-    } else if (e.target.matches('[data-click="addToCart"]')) {
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        addToCart(id);
-    }
 
-    // Мой вариант (короче)
-    // if (e.target.innerText === '-') {
-    //     console.log('minus');
-    // } else if (e.target.innerText === "+") {
-    //     console.log("plus");
-    // }
-})
+        // Проверяем пустая корзина или нет, для отображения доп.информации
+        checkCart();
+        calculateTotalPrice();
 
-// Ловим событие в корзине
-cart.addEventListener('click', function (e) {
- 
-    // console.log(id);
+        // очищаем контейнер и
+        cartItemsContainer.innerHTML = "";
+        // Вывод товара из корзины
+        state.cart.forEach(renderItemInCart);
 
-    if (e.target.matches('[data-click="minus"]')) {
-        // console.log('-');
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        itemUpdateCounter(id, "minus", "cart"); //Обновление счетчика в модели
-        itemUpdateViewCounter(id, "cart"); //Обновление счетчика в проекте
-    } else if (e.target.matches('[data-click="plus"]')) {
-        // console.log("+");
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        itemUpdateCounter(id, "plus", "cart");
-        itemUpdateViewCounter(id, "cart");
-    } else if (e.target.matches('[data-click="close"]')) {
-        console.log("close");
-        const id = e.target.closest("[data-productid]").dataset.productid;
-        deleteItem(id);
-    }
- })
+        // console.log(state.cart);
+    };
+
+    // Ловим событие в родительском контейнере
+    productsContainer.addEventListener("click", function (e) {
+        if (e.target.matches('[data-click="minus"]')) {
+            // console.log('-');
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            itemUpdateCounter(id, "minus", "items"); //Обновление счетчика в модели
+            itemUpdateViewCounter(id, "items"); //Обновление счетчика в проекте
+        } else if (e.target.matches('[data-click="plus"]')) {
+            // console.log('+');
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            itemUpdateCounter(id, "plus", "items");
+            itemUpdateViewCounter(id, "items");
+        } else if (e.target.matches('[data-click="addToCart"]')) {
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            addToCart(id);
+        }
+
+        // Мой вариант (короче)
+        // if (e.target.innerText === '-') {
+        //     console.log('minus');
+        // } else if (e.target.innerText === "+") {
+        //     console.log("plus");
+        // }
+    });
+
+    // Ловим событие в корзине
+    cart.addEventListener("click", function (e) {
+        // console.log(id);
+
+        if (e.target.matches('[data-click="minus"]')) {
+            // console.log('-');
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            itemUpdateCounter(id, "minus", "cart"); //Обновление счетчика в модели
+            // console.log("ID: " + id);
+            itemUpdateViewCounter(id, "cart"); //Обновление счетчика в проекте
+            localStorage.setItem("cart", JSON.stringify(state.cart));
+        } else if (e.target.matches('[data-click="plus"]')) {
+            // console.log("+");
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            itemUpdateCounter(id, "plus", "cart");
+            itemUpdateViewCounter(id, "cart");
+            localStorage.setItem("cart", JSON.stringify(state.cart));
+        } else if (e.target.matches('[data-click="close"]')) {
+            const id = e.target.closest("[data-productid]").dataset.productid;
+            deleteItem(id);
+            localStorage.setItem("cart", JSON.stringify(state.cart));
+        }
+    });
+}

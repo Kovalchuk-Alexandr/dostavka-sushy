@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "title": "Филадельфия хит ролл",
+        "price": 300,
+        "weigth": 180,
+        "itemsInBox": 6,
+        "img": "philadelphia.jpg",
+        "counter": 1
+    },
+    {
+        "id": 2,
+        "title": "Калифорния темпура",
+        "price": 250,
+        "weigth": 250,
+        "itemsInBox": 6,
+        "img": "california-tempura.jpg",
+        "counter": 1
+    },
+    {
+        "id": 3,
+        "title": "Запеченый ролл 'Калифорния'",
+        "price": 230,
+        "weigth": 182,
+        "itemsInBox": 6,
+        "img": "zapech-california.jpg",
+        "counter": 1
+    },
+    {
+        "id": 4,
+        "title": "Филадельфия",
+        "price": 230,
+        "weigth": 320,
+        "itemsInBox": 6,
+        "img": "philadelphia.jpg",
+        "counter": 1
+    }
+]
