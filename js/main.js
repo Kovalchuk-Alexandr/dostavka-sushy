@@ -120,6 +120,7 @@ async function main() {
     };
 
     const renderItemInCart = function (item) {
+        
         const markup = `
         <div class="cart-item" data-productid="${item.id}">
             <div class="cart-item__top">
@@ -221,15 +222,18 @@ async function main() {
         calculateDelivery();
     };
 
+    /* --------- Рендер корзины  ------------------------------------*/
     // Если корзина не пуста при загрузке - выводим
     if (state.cart.length > 0) {
+
+        initCart();
         // Проверяем пустая корзина или нет, для отображения доп.информации
-        checkCart();
-        calculateTotalPrice();
+        // checkCart();
+        // calculateTotalPrice();
         // очищаем контейнер и
-        cartItemsContainer.innerHTML = "";
+        // cartItemsContainer.innerHTML = "";
         // Вывод товара из корзины
-        state.cart.forEach(renderItemInCart);
+        // state.cart.forEach(renderItemInCart);
     }
 
     // Ф-я обновления счетчика в модели
@@ -257,7 +261,7 @@ async function main() {
             }
         }); // [ {i:1}, {i:2}, {i:3}, {i:4},]
 
-        console.log("itemIndex: " + itemIndex);
+        // console.log("itemIndex: " + itemIndex);
 
         // Получаем значение счетчика
         // let count = state.items[itemIndex].counter;
@@ -348,8 +352,9 @@ async function main() {
         // 2.2) Обновить значение счетчика в разметке
     };
 
-    // Ф-я обновления счетчика в разметке
-    const deleteItem = function (id) {
+    // Ф-я удаления элемента
+    function deleteItem(id) {
+   
         let target = state.cart;
 
         // Находим в 'state.items' (БД) индекс кликнутого элемента по переданному индексу
@@ -364,16 +369,17 @@ async function main() {
 
             target.splice(itemIndex, 1);
 
+            initCart();
             // Проверяем пустая корзина или нет, для отображения доп.информации
-            checkCart();
+            // checkCart();
 
             // очищаем контейнер и
-            cartItemsContainer.innerHTML = "";
+            // cartItemsContainer.innerHTML = "";
             // Вывод товара из корзины
-            state.cart.forEach(renderItemInCart);
+            // state.cart.forEach(renderItemInCart);
 
-            calculateTotalPrice();
-        }
+            // calculateTotalPrice();
+        } 
     };
 
     function setLocal() {
@@ -425,14 +431,15 @@ async function main() {
         state.items[itemIndex].counter = 1;
         itemUpdateViewCounter(id, "items");
 
+        initCart();
         // Проверяем пустая корзина или нет, для отображения доп.информации
-        checkCart();
-        calculateTotalPrice();
+        // checkCart();
+        // calculateTotalPrice();
 
         // очищаем контейнер и
-        cartItemsContainer.innerHTML = "";
+        // cartItemsContainer.innerHTML = "";
         // Вывод товара из корзины
-        state.cart.forEach(renderItemInCart);
+        // state.cart.forEach(renderItemInCart);
 
         // console.log(state.cart);
     };
@@ -485,4 +492,16 @@ async function main() {
             localStorage.setItem("cart", JSON.stringify(state.cart));
         }
     });
+}
+
+
+/* --------- Инициализация корзины: подсчет общей суммы, кол-ва, вывод рендер корзины  ------------------------------------*/
+function initCart() {
+    // Проверяем пустая корзина или нет, для отображения доп.информации
+    checkCart();
+    calculateTotalPrice();
+    // очищаем контейнер и
+    cartItemsContainer.innerHTML = "";
+    // Вывод товара из корзины
+    state.cart.forEach(renderItemInCart);
 }
